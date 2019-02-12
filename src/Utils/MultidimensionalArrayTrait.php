@@ -50,7 +50,10 @@ trait MultidimensionalArrayTrait
                 $messages[$context][$original] = $translation->getPluralTranslations($pluralSize);
                 array_unshift($messages[$context][$original], $translation->getTranslation());
             } elseif ($forceArray) {
-                $messages[$context][$original] = [$translation->getTranslation()];
+                // Elkdata fix - save translation, references and comments to subarray keys
+                $messages[$context][$original]['text'] = [$translation->getTranslation()];
+                $messages[$context][$original]['references'] = $translation->getReferences();
+                $messages[$context][$original]['comments'] = $translation->getComments();
             } else {
                 $messages[$context][$original] = $translation->getTranslation();
             }
@@ -88,11 +91,24 @@ trait MultidimensionalArrayTrait
 
                 $translation = $translations->insert($context, $original);
 
-                if (is_array($value)) {
-                    $translation->setTranslation(array_shift($value));
-                    $translation->setPluralTranslations($value);
+                // Elkdata fix - translations are now in subarray text key
+                if (is_array($value['text'])) {
+                    $translation->setTranslation(array_shift($value['text']));
+                    $translation->setPluralTranslations($value['text']);
                 } else {
                     $translation->setTranslation($value);
+                }
+
+                // Elkdata fix - add loading references and comments from translation file
+                if (isset($value['references']) && is_array($value['references'])) {
+                    foreach ($value['references'] as $reference) {
+                        $translation->addReference($reference[0], $reference[1]);
+                    }
+                }
+                if (isset($value['comments']) && is_array($value['comments'])) {
+                    foreach ($value['comments'] as $comment) {
+                        $translation->addComment($comment);
+                    }
                 }
             }
         }

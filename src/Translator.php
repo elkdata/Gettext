@@ -186,8 +186,9 @@ class Translator extends BaseTranslator implements TranslatorInterface
      */
     protected function getTranslation($domain, $context, $original)
     {
+        // Elkdata fix - translated text is in subarray text key
         return isset($this->dictionary[$domain][$context][$original])
-             ? $this->dictionary[$domain][$context][$original]
+             ? $this->dictionary[$domain][$context][$original]['text']
              : false;
     }
 
